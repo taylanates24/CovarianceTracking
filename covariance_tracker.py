@@ -46,8 +46,8 @@ class CovarianceTracker:
         f_mean = np.array(
             [f[:, :, 0].mean(), f[:, :, 1].mean(), f[:, :, 2].mean(), f[:, :, 3].mean(), f[:, :, 4].mean()])
 
-        asd = f - f_mean
-        total = np.dot(asd.transpose().squeeze(), asd.squeeze())
+        f = f - f_mean
+        total = np.dot(f.transpose().squeeze(), f.squeeze())
 
         total = total / len(f)
 
