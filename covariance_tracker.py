@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from scipy.linalg import logm, expm, eigh
 
 
 class CovarianceTracker:
@@ -10,7 +10,6 @@ class CovarianceTracker:
         self.vid = vid
 
     def feature_extraction(self, image, bbox):
-
         image = image[bbox[1]:bbox[3], bbox[0]:bbox[2]]
 
         lap = cv2.Laplacian(image, cv2.CV_64F, ksize=3)
@@ -28,7 +27,6 @@ class CovarianceTracker:
         return lap_gray, sobelx_gray, sobely_gray
 
     def covariance_matrix(self, lap_gray, sobelx_gray, sobely_gray, bbox):
-
         lap_gray = lap_gray[bbox[1]:bbox[3], bbox[0]:bbox[2]]
         sobelx_gray = sobelx_gray[bbox[1]:bbox[3], bbox[0]:bbox[2]]
         sobely_gray = sobely_gray[bbox[1]:bbox[3], bbox[0]:bbox[2]]
@@ -54,3 +52,11 @@ class CovarianceTracker:
         total = total / len(f)
 
         return total
+
+    def calc_distance(self, cov1, cov2):
+        eigvals = eigh(cov1, cov2, eigvals_only=True)
+        eig_ln = np.square(np.log(eigvals)).sum()
+
+        return eig_ln
+
+
