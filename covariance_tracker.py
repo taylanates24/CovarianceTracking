@@ -59,4 +59,6 @@ class CovarianceTracker:
 
         return eig_ln
 
+    def c_t(self, C_cap, C_t):
+        return logm((np.matmul(np.linalg.inv(C_cap), C_t)))
 
