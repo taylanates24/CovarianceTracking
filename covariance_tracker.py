@@ -62,3 +62,10 @@ class CovarianceTracker:
     def c_t(self, C_cap, C_t):
         return logm((np.matmul(np.linalg.inv(C_cap), C_t)))
 
+    def delta_C(self, mat_list, mat_c):
+        ct = []
+        for i in range(len(mat_list)):
+            ct.append(self.c_t(mat_c, mat_list[i]))
+        ct = sum(ct) / len(ct)
+        return expm(ct)
+
