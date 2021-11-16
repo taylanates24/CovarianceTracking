@@ -69,3 +69,12 @@ class CovarianceTracker:
         ct = sum(ct) / len(ct)
         return expm(ct)
 
+    def update(self, cov_list, cov, threshold=1e-3):
+        while True:
+            C_delta = self.delta_C(cov_list, cov)
+            eps = np.linalg.norm(logm(C_delta))
+            if eps < threshold:
+                return cov
+            else:
+                cov = np.matmul(cov, C_delta)
+
