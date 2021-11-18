@@ -5,11 +5,10 @@ from scipy.linalg import logm, expm, eigh
 
 class CovarianceTracker:
 
-    def __init__(self, bbox, vid):
-        self.bbox = bbox
-        self.vid = vid
+    def __init__(self):
+        self.cov_list = []
 
-    def feature_extraction(self, image, bbox):
+    def covariance_matrix(self, image, bbox):
         image = image[bbox[1]:bbox[3], bbox[0]:bbox[2]]
 
         lap = cv2.Laplacian(image, cv2.CV_64F, ksize=3)
@@ -23,13 +22,6 @@ class CovarianceTracker:
         sobely = cv2.Sobel(image, 0, dx=0, dy=1)
         sobely = np.uint8(np.absolute(sobely))
         sobely_gray = cv2.cvtColor(sobely, cv2.COLOR_BGR2GRAY)
-
-        return lap_gray, sobelx_gray, sobely_gray
-
-    def covariance_matrix(self, lap_gray, sobelx_gray, sobely_gray, bbox):
-        lap_gray = lap_gray[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-        sobelx_gray = sobelx_gray[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-        sobely_gray = sobely_gray[bbox[1]:bbox[3], bbox[0]:bbox[2]]
 
         y_len = bbox[3] - bbox[1]
         x_len = bbox[2] - bbox[0]
@@ -69,12 +61,19 @@ class CovarianceTracker:
         ct = sum(ct) / len(ct)
         return expm(ct)
 
-    def update(self, cov_list, cov, threshold=1e-3):
-        while True:
-            C_delta = self.delta_C(cov_list, cov)
-            eps = np.linalg.norm(logm(C_delta))
-            if eps < threshold:
-                return cov
-            else:
-                cov = np.matmul(cov, C_delta)
-
+    def update(self, cov_2, threshold=1e-3):
+        self.cov_list.append(cov_2)
+        if len(self.cov_list) > 5:
+            self.cov_list.pop(0)
+        if len(self.cov_list) == 5:
+            cov = self.cov_list[0]
+            while True:
+                C_delta = self.delta_C(self.cov_list, cov)
+                eps = np.linalg.norm(logm(C_delta))
+                if eps < threshold:
+                    return cov
+                else:
+                    cov = np.matmul(cov, C_delta)
+                    return cov
+        else:
+            return cov_2
